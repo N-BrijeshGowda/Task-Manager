@@ -34,15 +34,17 @@ export default function TaskItem({ task, showDate, onUpdate, onDelete }) {
         {task.description && <p className="item-desc">{task.description}</p>}
         {showDate && <p className="item-meta">{formatDate(task.task_date)}</p>}
       </div>
-      <div className="item-actions">
-        <button className="btn btn-small" onClick={() => setEditing(true)}>Edit</button>
-        <button
-          className="btn btn-small btn-danger"
-          onClick={() => window.confirm(`Delete "${task.title}"?`) && onDelete(task.id)}
-        >
-          Delete
-        </button>
-      </div>
+      {onUpdate && onDelete && (
+        <div className="item-actions">
+          <button className="btn btn-small" onClick={() => setEditing(true)}>Edit</button>
+          <button
+            className="btn btn-small btn-danger"
+            onClick={() => window.confirm(`Delete "${task.title}"?`) && onDelete(task.id)}
+          >
+            Delete
+          </button>
+        </div>
+      )}
     </li>
   );
 }
