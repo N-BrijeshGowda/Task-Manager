@@ -24,6 +24,12 @@ const today = () => {
   return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`;
 };
 
+// Local date and time as 'YYYY-MM-DD HH:MM:SS'
+const nowStamp = () => {
+  const n = new Date();
+  return `${today()} ${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+};
+
 // Monday of the week (Mon-Sun) that contains the date
 const mondayOf = (s) => {
   const dow = dayOfWeek(s);
@@ -37,4 +43,4 @@ const monthRange = (month) => {
   return { from, to };
 };
 
-module.exports = { isDate, addDays, dayOfWeek, today, mondayOf, monthRange };
+module.exports = { isDate, addDays, dayOfWeek, today, nowStamp, mondayOf, monthRange };

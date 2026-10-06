@@ -1,12 +1,8 @@
--- Daily Task Tracker & Scheduler - database schema
--- Import this file in phpMyAdmin (Import tab) or run it from the SQL tab.
--- Already have the database from an earlier version? Import migration_admin.sql instead.
+-- Same tables as schema.sql, without CREATE DATABASE / USE, for cloud MySQL hosts
+-- where the database already exists and has its own name. Run it inside that database.
+-- Keep this file in sync with schema.sql.
 
-CREATE DATABASE IF NOT EXISTS daily_task_tracker
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
 
-USE daily_task_tracker;
 
 CREATE TABLE IF NOT EXISTS users (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT,

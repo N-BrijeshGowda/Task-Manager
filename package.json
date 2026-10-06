@@ -1,0 +1,11 @@
+{
+  "name": "daily-task-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily Task Tracker & Scheduler (React + Express + MySQL). These scripts are used when hosting.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "npm --prefix client install --include=dev && npm --prefix client run build && npm --prefix server install",
+    "start": "node server/server.js"
+  }
+}

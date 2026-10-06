@@ -11,6 +11,10 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   // Return DATE columns as 'YYYY-MM-DD' strings so there are no timezone surprises.
   dateStrings: true,
+  // Cloud MySQL providers require TLS. Set DB_SSL=true there (leave it off for local XAMPP).
+  ...(process.env.DB_SSL === 'true' && {
+    ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: process.env.DB_SSL_STRICT !== 'false' },
+  }),
 });
 
 module.exports = pool;

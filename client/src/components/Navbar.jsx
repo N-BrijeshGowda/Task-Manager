@@ -9,13 +9,14 @@ const LINKS = [
 export default function Navbar({ route }) {
   const { user, stats, logout, toggleTheme } = useAuth();
   const dark = user?.theme === 'dark';
+  const links = user?.role === 'admin' ? [...LINKS, { to: '/admin', label: 'Admin' }] : LINKS;
 
   return (
     <header className="navbar">
       <div className="navbar-inner">
         <a className="brand" href="#/">Daily Task Tracker</a>
         <nav className="nav-links">
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <a key={l.to} href={`#${l.to}`} className={route === l.to ? 'active' : ''}>{l.label}</a>
           ))}
         </nav>

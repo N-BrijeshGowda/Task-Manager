@@ -1,7 +1,8 @@
 const express = require('express');
 const db = require('../config/db');
 const wrap = require('../utils/wrap');
-const { isDate, today, addDays, dayOfWeek, mondayOf } = require('../utils/dates');
+const { logEvent } = require('../utils/audit');
+const { isDate, today, nowStamp, addDays, dayOfWeek, mondayOf } = require('../utils/dates');
 const { cleanText, priorityOr } = require('../utils/validate');
 const { nextWorkingDay, weekEnd } = require('../utils/workdays');
 
@@ -102,6 +103,7 @@ router.post('/', wrap(async (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [req.userId, title, cleanText(req.body.description, 5000) || null, dueDate, scope, priorityOr(req.body.priority), recurrence]
   );
+  logEvent(req, 'planned_create');
   const [rows] = await db.query('SELECT * FROM planned_tasks WHERE id = ?', [result.insertId]);
   res.status(201).json({ planned: withOverdue(rows)[0] });
 }));
@@ -135,6 +137,7 @@ router.put('/:id', wrap(async (req, res) => {
      WHERE id = ? AND user_id = ?`,
     [title, cleanText(req.body.description, 5000) || null, dueDate, priorityOr(req.body.priority), recurrence, item.id, req.userId]
   );
+  logEvent(req, 'planned_update');
   const [rows] = await db.query('SELECT * FROM planned_tasks WHERE id = ?', [item.id]);
   res.json({ planned: withOverdue(rows)[0] });
 }));
@@ -142,6 +145,7 @@ router.put('/:id', wrap(async (req, res) => {
 router.delete('/:id', wrap(async (req, res) => {
   const [result] = await db.query('DELETE FROM planned_tasks WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
   if (!result.affectedRows) return res.status(404).json({ message: 'Planned task not found' });
+  logEvent(req, 'planned_delete');
   res.json({ message: 'Planned task deleted' });
 }));
 
@@ -170,7 +174,7 @@ router.patch('/:id/complete', wrap(async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?)`,
       [req.userId, item.title, item.description, taskDate, item.priority, item.id]
     );
-    await conn.query("UPDATE planned_tasks SET status = 'done', completed_at = NOW() WHERE id = ?", [item.id]);
+    await conn.query("UPDATE planned_tasks SET status = 'done', completed_at = ? WHERE id = ?", [nowStamp(), item.id]);
 
     let nextId = null;
     if (item.recurrence !== 'none') {
@@ -183,6 +187,7 @@ router.patch('/:id/complete', wrap(async (req, res) => {
       nextId = next.insertId;
     }
     await conn.commit();
+    logEvent(req, 'planned_complete');
     res.json({ taskId: ins.insertId, nextPlannedId: nextId });
   } catch (err) {
     await conn.rollback();
@@ -209,6 +214,7 @@ router.patch('/:id/reschedule', wrap(async (req, res) => {
   );
   if (!found[0]) return res.status(404).json({ message: 'Planned task not found' });
   const due = await rescheduleItem(req.userId, found[0]);
+  logEvent(req, 'planned_reschedule');
   res.json({ due_date: due });
 }));
 
@@ -218,6 +224,7 @@ router.post('/reschedule-overdue', wrap(async (req, res) => {
     [req.userId, today()]
   );
   for (const item of rows) await rescheduleItem(req.userId, item);
+  if (rows.length) logEvent(req, 'planned_reschedule');
   res.json({ moved: rows.length });
 }));
 
