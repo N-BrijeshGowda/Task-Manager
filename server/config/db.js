@@ -13,7 +13,13 @@ const pool = mysql.createPool({
   dateStrings: true,
   // Cloud MySQL providers require TLS. Set DB_SSL=true there (leave it off for local XAMPP).
   ...(process.env.DB_SSL === 'true' && {
-    ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: process.env.DB_SSL_STRICT !== 'false' },
+    ssl: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: process.env.DB_SSL_STRICT !== 'false',
+      // Providers like Aiven sign with their own CA: paste its PEM text into DB_SSL_CA.
+      // (Dashboards often turn real newlines into the two characters \n, so convert them back.)
+      ...(process.env.DB_SSL_CA && { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n') }),
+    },
   }),
 });
 

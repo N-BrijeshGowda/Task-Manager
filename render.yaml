@@ -19,6 +19,8 @@ services:
         generateValue: true
       - key: DB_SSL
         value: "true"
+      - key: DB_SSL_CA
+        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_PORT
