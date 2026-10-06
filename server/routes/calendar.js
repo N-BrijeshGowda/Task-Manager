@@ -3,6 +3,7 @@ const db = require('../config/db');
 const wrap = require('../utils/wrap');
 const { isDate, today, monthRange, dayOfWeek } = require('../utils/dates');
 const { readjustWeekly } = require('../utils/workdays');
+const { logEvent } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -55,6 +56,7 @@ router.put('/day-settings/:date', wrap(async (req, res) => {
     [req.userId, date, type, note || null]
   );
   await readjustWeekly(req.userId, date);
+  logEvent(req, 'day_mark');
   res.json({ date, type, note: note || null });
 }));
 
@@ -64,6 +66,7 @@ router.delete('/day-settings/:date', wrap(async (req, res) => {
   if (!isDate(date)) return res.status(400).json({ message: 'Invalid date' });
   await db.query('DELETE FROM day_settings WHERE user_id = ? AND date = ?', [req.userId, date]);
   await readjustWeekly(req.userId, date);
+  logEvent(req, 'day_reset');
   res.json({ date });
 }));
 

@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
       .then(({ data }) => {
         setUser(data.user);
         applyTheme(data.user.theme);
-        refreshStats();
+        if (!data.user.must_change_password) refreshStats();
       })
       .catch(() => localStorage.removeItem('token'))
       .finally(() => setLoading(false));
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', data.token);
     setUser(data.user);
     applyTheme(data.user.theme);
-    refreshStats();
+    if (!data.user.must_change_password) refreshStats();
   };
 
   const login = async (email, password) => {
@@ -50,6 +50,12 @@ export function AuthProvider({ children }) {
   const register = async (name, email, password) => {
     const { data } = await api.post('/auth/register', { name, email, password });
     startSession(data);
+  };
+
+  // Called after the forced password change succeeds.
+  const passwordChanged = () => {
+    setUser((u) => (u ? { ...u, must_change_password: false } : u));
+    refreshStats();
   };
 
   const logout = () => {
@@ -70,7 +76,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, stats, refreshStats, login, register, logout, toggleTheme }}>
+    <AuthContext.Provider value={{ user, loading, stats, refreshStats, login, register, logout, toggleTheme, passwordChanged }}>
       {children}
     </AuthContext.Provider>
   );

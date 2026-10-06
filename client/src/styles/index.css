@@ -276,3 +276,28 @@ textarea { resize: vertical; width: 100%; }
   .day-num { padding: 4px 5px; font-size: 0.8rem; }
   .tabs-action { margin-left: 0; }
 }
+
+/* ---------- Admin ---------- */
+.stats-wide { grid-template-columns: repeat(5, 1fr); margin-bottom: 0; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table th, .table td { text-align: left; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table th { background: var(--surface-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.table tr:last-child td { border-bottom: none; }
+.row-actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
+.pill { font-size: 0.75rem; font-weight: 700; border-radius: 999px; padding: 0.1rem 0.6rem; }
+.pill-ok { background: var(--done-bg); color: var(--done-text); }
+.pill-off { background: color-mix(in srgb, var(--red) 18%, transparent); color: var(--red); }
+.ev { font-weight: 600; }
+.ev-bad { color: var(--red); }
+.ev-admin { color: var(--primary); }
+.pager { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-top: 1rem; }
+
+@media (max-width: 900px) {
+  .stats-wide { grid-template-columns: repeat(2, 1fr); }
+}
+
+.temp-pw { border: 2px solid var(--primary); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1rem; background: color-mix(in srgb, var(--primary) 8%, var(--surface)); }
+.temp-pw p { margin: 0 0 0.6rem; font-size: 0.9rem; }
+.temp-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.temp-row code { font-size: 1.2rem; font-weight: 700; letter-spacing: 0.08em; background: var(--surface); border: 1px dashed var(--border); border-radius: 8px; padding: 0.3rem 0.7rem; user-select: all; }

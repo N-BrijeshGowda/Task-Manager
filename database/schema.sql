@@ -1,5 +1,6 @@
 -- Daily Task Tracker & Scheduler - database schema
 -- Import this file in phpMyAdmin (Import tab) or run it from the SQL tab.
+-- Already have the database from an earlier version? Import migration_admin.sql instead.
 
 CREATE DATABASE IF NOT EXISTS daily_task_tracker
   CHARACTER SET utf8mb4
@@ -13,6 +14,10 @@ CREATE TABLE IF NOT EXISTS users (
   email         VARCHAR(190) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   theme         ENUM('light', 'dark') NOT NULL DEFAULT 'light',
+  role          ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+  is_active     TINYINT(1) NOT NULL DEFAULT 1,
+  must_change_password TINYINT(1) NOT NULL DEFAULT 0,
+  last_login_at DATETIME NULL,
   created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_email (email)
@@ -61,4 +66,19 @@ CREATE TABLE IF NOT EXISTS day_settings (
   PRIMARY KEY (id),
   UNIQUE KEY uq_day_user_date (user_id, date),
   CONSTRAINT fk_day_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Activity log shown to the admin. It never stores names, emails or task/plan content.
+-- No foreign keys on purpose: log rows must survive when an account is deleted.
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id        INT UNSIGNED NULL,
+  event          VARCHAR(40) NOT NULL,
+  target_user_id INT UNSIGNED NULL,
+  ip             VARCHAR(45) NULL,
+  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_logs_created (created_at),
+  KEY idx_logs_event (event, created_at),
+  KEY idx_logs_user (user_id, created_at)
 ) ENGINE=InnoDB;

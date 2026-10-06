@@ -5,6 +5,8 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Planner from './pages/Planner';
+import Admin from './pages/Admin';
+import ChangePassword from './pages/ChangePassword';
 
 // Tiny hash router (#/, #/tasks, #/planner, #/login, #/register).
 function useRoute() {
@@ -28,9 +30,12 @@ export default function App() {
     return <AuthPage mode={route === '/register' ? 'register' : 'login'} />;
   }
 
+  if (user.must_change_password) return <ChangePassword />;
+
   let page = <Dashboard />;
   if (route === '/tasks') page = <Tasks />;
   else if (route === '/planner') page = <Planner />;
+  else if (route === '/admin' && user.role === 'admin') page = <Admin />;
 
   return (
     <>

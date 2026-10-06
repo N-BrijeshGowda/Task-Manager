@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../config/db');
 const wrap = require('../utils/wrap');
+const { logEvent } = require('../utils/audit');
 const { isDate, today, monthRange } = require('../utils/dates');
 const { cleanText, priorityOr, PRIORITIES } = require('../utils/validate');
 
@@ -51,6 +52,7 @@ router.post('/', wrap(async (req, res) => {
     'INSERT INTO tasks (user_id, title, description, task_date, priority) VALUES (?, ?, ?, ?, ?)',
     [req.userId, title, cleanText(req.body.description, 5000) || null, taskDate, priorityOr(req.body.priority)]
   );
+  logEvent(req, 'task_create');
   const [rows] = await db.query('SELECT * FROM tasks WHERE id = ?', [result.insertId]);
   res.status(201).json({ task: rows[0] });
 }));
@@ -67,6 +69,7 @@ router.put('/:id', wrap(async (req, res) => {
     [title, cleanText(req.body.description, 5000) || null, taskDate, priorityOr(req.body.priority), req.params.id, req.userId]
   );
   if (!result.affectedRows) return res.status(404).json({ message: 'Task not found' });
+  logEvent(req, 'task_update');
   const [rows] = await db.query('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
   res.json({ task: rows[0] });
 }));
@@ -74,6 +77,7 @@ router.put('/:id', wrap(async (req, res) => {
 router.delete('/:id', wrap(async (req, res) => {
   const [result] = await db.query('DELETE FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
   if (!result.affectedRows) return res.status(404).json({ message: 'Task not found' });
+  logEvent(req, 'task_delete');
   res.json({ message: 'Task deleted' });
 }));
 
