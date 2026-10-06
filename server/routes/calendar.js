@@ -7,7 +7,8 @@ const { logEvent } = require('../utils/audit');
 
 const router = express.Router();
 
-// GET /api/calendar?month=YYYY-MM  ->  { days: { 'YYYY-MM-DD': { count, type, note, overdue } } }
+// GET /api/calendar?month=YYYY-MM
+//   -> { days: { 'YYYY-MM-DD': { count, type, note, overdue, planned: [{ id, title, priority, scope, overdue }] } } }
 router.get('/calendar', wrap(async (req, res) => {
   const { month } = req.query;
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) return res.status(400).json({ message: 'Invalid month' });
@@ -22,18 +23,24 @@ router.get('/calendar', wrap(async (req, res) => {
     'SELECT date, type, note FROM day_settings WHERE user_id = ? AND date BETWEEN ? AND ?',
     [req.userId, from, to]
   );
-  const [overdue] = await db.query(
-    `SELECT due_date AS date FROM planned_tasks
-     WHERE user_id = ? AND status = 'pending' AND due_date < ? AND due_date BETWEEN ? AND ?
-     GROUP BY due_date`,
-    [req.userId, today(), from, to]
+  const [planned] = await db.query(
+    `SELECT id, title, priority, scope, due_date AS date FROM planned_tasks
+     WHERE user_id = ? AND status = 'pending' AND due_date BETWEEN ? AND ?
+     ORDER BY due_date, FIELD(priority, 'high', 'medium', 'low'), id`,
+    [req.userId, from, to]
   );
 
   const days = {};
-  const get = (d) => (days[d] = days[d] || { count: 0, type: null, note: null, overdue: false });
+  const get = (d) => (days[d] = days[d] || { count: 0, type: null, note: null, overdue: false, planned: [] });
+  const t = today();
   counts.forEach((r) => { get(r.date).count = r.count; });
   settings.forEach((r) => { Object.assign(get(r.date), { type: r.type, note: r.note }); });
-  overdue.forEach((r) => { get(r.date).overdue = true; });
+  planned.forEach((r) => {
+    const day = get(r.date);
+    const isOverdue = r.date < t;
+    day.planned.push({ id: r.id, title: r.title, priority: r.priority, scope: r.scope, overdue: isOverdue });
+    if (isOverdue) day.overdue = true;
+  });
   res.json({ days });
 }));
 

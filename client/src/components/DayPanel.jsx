@@ -42,23 +42,10 @@ export default function DayPanel({ date, info, onChanged }) {
     }
   };
 
-  const updateTask = async (id, values) => {
+  const completePlanned = async (p) => {
     try {
-      await api.put(`/tasks/${id}`, values);
-      toast('Task updated');
-      await load();
-      onChanged();
-      return true;
-    } catch (err) {
-      toast(errorMessage(err), 'error');
-      return false;
-    }
-  };
-
-  const deleteTask = async (id) => {
-    try {
-      await api.delete(`/tasks/${id}`);
-      toast('Task deleted');
+      await api.patch(`/planned/${p.id}/complete`, {});
+      toast('Done! Added to today’s completed tasks');
       await load();
       onChanged();
     } catch (err) {
@@ -114,13 +101,39 @@ export default function DayPanel({ date, info, onChanged }) {
         )}
       </div>
 
+      {info?.planned?.length > 0 && (
+        <>
+          <h3>Scheduled for this day</h3>
+          <ul className="list">
+            {info.planned.map((p) => (
+              <li key={p.id} className={`item ${p.overdue ? 'item-overdue' : ''}`}>
+                <button
+                  className="check"
+                  title="Mark as done (adds it to today's completed tasks)"
+                  aria-label={`Mark "${p.title}" as done`}
+                  onClick={() => completePlanned(p)}
+                />
+                <div className="item-main">
+                  <div className="item-title">
+                    <span className={`badge badge-${p.priority}`}>{p.priority}</span>
+                    <strong>{p.title}</strong>
+                    {p.overdue && <span className="tag tag-overdue">Overdue</span>}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="hint">Edit or delete scheduled items in the <a href="#/planner">Planner</a>.</p>
+        </>
+      )}
+
       <h3>Completed tasks</h3>
       {loading ? (
         <p className="muted">Loading…</p>
       ) : tasks.length ? (
         <ul className="list">
           {tasks.map((t) => (
-            <TaskItem key={t.id} task={t} onUpdate={updateTask} onDelete={deleteTask} />
+            <TaskItem key={t.id} task={t} />
           ))}
         </ul>
       ) : (

@@ -50,8 +50,9 @@ export default function Calendar({ year, month, days, selected, onSelect, onPrev
             info?.type === 'holiday' ? `Holiday${info.note ? `: ${info.note}` : ''}` : '',
             info?.type === 'leave' ? `Leave${info.note ? `: ${info.note}` : ''}` : '',
             info?.type === 'working_saturday' ? 'Working Saturday' : '',
-            info?.overdue ? 'Overdue planned items' : '',
+            ...(info?.planned || []).map((p) => `Scheduled: ${p.title}${p.overdue ? ' (overdue)' : ''}`),
           ].filter(Boolean).join(' • ');
+          const planned = info?.planned || [];
           const markers = info?.type === 'holiday' || info?.type === 'leave';
           return (
             <button
@@ -60,12 +61,16 @@ export default function Calendar({ year, month, days, selected, onSelect, onPrev
               onClick={() => onSelect(date)}
               title={tip || undefined}
             >
-              <span className="day-num">{Number(date.slice(8))}</span>
-              {info?.type === 'working_saturday' && <span className="badge-w">W</span>}
-              <span className="dots">
-                {markers && info.count > 0 && <i className="dot dot-green" />}
-                {info?.overdue && <i className="dot dot-red" />}
+              <span className="day-head">
+                <span className="day-num">{Number(date.slice(8))}</span>
+                {markers && info.count > 0 && <i className="dot dot-green" title="Tasks completed" />}
               </span>
+              {info?.type === 'working_saturday' && <span className="badge-w">W</span>}
+              {planned.map((p) => (
+                <span key={p.id} className={`chip chip-${p.priority}${p.overdue ? ' chip-overdue' : ''}`}>
+                  <span className="chip-text">{p.title}</span>
+                </span>
+              ))}
             </button>
           );
         })}
@@ -77,7 +82,8 @@ export default function Calendar({ year, month, days, selected, onSelect, onPrev
         <span><i className="swatch sw-leave" /> Leave</span>
         <span><i className="swatch sw-off" /> Weekend off</span>
         <span><b className="badge-w static">W</b> Working Saturday</span>
-        <span><i className="dot dot-red" /> Overdue planned</span>
+        <span><i className="chip-key" /> Scheduled (from Planner)</span>
+        <span><i className="chip-key chip-key-overdue" /> Overdue</span>
       </div>
     </div>
   );

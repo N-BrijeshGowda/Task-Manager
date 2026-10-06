@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PlannerForm from '../components/PlannerForm';
 import PlannerItem from '../components/PlannerItem';
+import { formatDate } from '../utils/dates';
 
 const TABS = [
   { key: 'all', label: 'All pending' },
@@ -74,7 +75,14 @@ export default function Planner() {
     <div className="stack">
       <section className="card">
         <h2>Plan something</h2>
-        <PlannerForm onSubmit={(v) => run(() => api.post('/planned', payload(v)), 'Added to planner')} />
+        <PlannerForm
+          onSubmit={(v) =>
+            run(
+              () => api.post('/planned', payload(v)),
+              v.scope === 'day' ? `Scheduled for ${formatDate(v.due_date)}. It now shows on the calendar.` : 'Added. It shows on the calendar on its due day.'
+            )
+          }
+        />
       </section>
 
       <section className="card">
