@@ -15,9 +15,17 @@ free or cheap MySQL plan include Aiven, TiDB Cloud and Railway, among others. Cr
 
 `host`, `port`, `user`, `password`, `database name`.
 
-Then create the tables by running **`database/schema_hosted.sql`** inside that database
-(the provider's SQL console, MySQL Workbench, or the `mysql` command line). Use
-`schema_hosted.sql`, not `schema.sql`, because managed databases already have a fixed name.
+Then create the tables with the setup script (it works with Aiven and any other cloud MySQL):
+
+1. Download the provider's CA certificate (Aiven: Overview page, "CA certificate", saved as `ca.pem`).
+2. In the `server` folder, copy `.env.cloud.example` to `.env.cloud` and fill in your host, port, user,
+   password, database name, and the full path to `ca.pem`. This file is never committed to GitHub.
+3. Run:
+   ```
+   cd server
+   node scripts/setup-db.js
+   ```
+   It prints `Done. The database is ready.` when the 5 tables exist. It is safe to run again.
 
 ## 2. Push the code to GitHub
 
